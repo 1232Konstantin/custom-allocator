@@ -69,6 +69,6 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./build/custom_allocator-${{steps.get_version.outputs.version}}-Linux.deb
-        asset_name: custom_allocator-${{env.BRANCH}}-${{steps.get_version.outputs.version}}-${{env.COMMIT_DISTANCE}}-${{env.COMMIT_HASH}}-Linux.deb
+        asset_name: custom_allocator-${{env.BRANCH}}-${{steps.get_version.outputs.version}}-${{env.COMMIT_DISTANCE}}-Linux.deb
         asset_content_type: application/vnd.debian.binary-package
 
