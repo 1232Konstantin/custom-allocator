@@ -6,7 +6,8 @@ find_package(GTest REQUIRED)
 
 add_executable(
   ${PROJECT_NAME}
-  test_dummy.cpp
+  test_memory_pool.cpp
+  test_monotonic_allocator.cpp
 )
 
 target_link_libraries(
