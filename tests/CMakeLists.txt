@@ -9,6 +9,7 @@ add_executable(
   test_memory_pool.cpp
   test_monotonic_allocator.cpp
   test_custom_list.cpp
+  test_utils.cpp
 )
 
 target_link_libraries(

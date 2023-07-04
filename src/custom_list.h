@@ -79,6 +79,7 @@ class list {
  public:
   using iterator = node_iterator<node>;
   using const_iterator = node_iterator<const node>;
+  using value_type = T;
 
   list(const Allocator &allocator = Allocator{}) noexcept
       : _block(), _allocator(allocator) {
