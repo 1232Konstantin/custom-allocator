@@ -59,6 +59,10 @@ struct memory_pool {
   using propagate_on_container_move_assignment = std::true_type;
   using propagate_on_container_swap = std::true_type;
 
+  template <typename U>
+  memory_pool(const memory_pool<U, BlockSize, Strategy>& other)
+      : memory_pool{other.size()} {}
+
   memory_pool(std::size_t initial_blocks_count) noexcept
       : _free_blocks(), _slab(initial_blocks_count) {
     for (auto& block : _slab) {
@@ -86,6 +90,10 @@ struct memory_pool {
 
   auto free_blocks() const noexcept -> std::size_t {
     return _free_blocks.size();
+  }
+
+  auto size() const noexcept -> std::size_t {
+    return _slab.size();
   }
 
   auto deallocate(T* ptr, std::size_t /*size*/) noexcept {
