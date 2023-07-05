@@ -90,6 +90,7 @@ class list {
   ~list() {
     for (auto *block = _block.next; block != &_block;) {
       auto *next = block->next;
+      NodeAllocatorTraits::destroy(_allocator, block);
       NodeAllocatorTraits::deallocate(_allocator, block, 1);
       block = next;
     }

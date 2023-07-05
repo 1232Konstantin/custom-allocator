@@ -21,8 +21,7 @@ int main() {
 
   {
     using PairAllocator = custom::memory_pool<std::pair<const int, int>>;
-    using CustomAllocatorMap =
-        std::map<int, int, std::less<int>, PairAllocator>;
+    using CustomAllocatorMap = std::map<int, int, std::less<>, PairAllocator>;
 
     CustomAllocatorMap allocator_map{PairAllocator{SIZE}};
     for (uint32_t key = 0; key < SIZE; key++) {

@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <iterator>
+#include <memory>
 
 #include <gtest/gtest.h>
 
@@ -50,4 +51,17 @@ TEST(CustomListTest, CreateWithBlockAllocator) {  // NOLINT
 
   list_with_allocator.push_back(0x42);
   ASSERT_EQ(allocator.free_blocks(), BLOCKS - 1);
+}
+
+TEST(CustomListTest, CallDestructor) { // NOLINT
+  auto int_ptr = std::make_shared<int>(0x42);
+  ASSERT_EQ(int_ptr.use_count(), 1);
+
+  {
+    custom::list<decltype(int_ptr)> ptr_list;
+    ptr_list.push_back(int_ptr);
+    ASSERT_TRUE(int_ptr.use_count() > 1);
+  }
+
+  ASSERT_EQ(int_ptr.use_count(), 1);
 }
