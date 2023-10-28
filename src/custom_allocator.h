@@ -22,6 +22,9 @@ class monotonic_allocator {
   using propagate_on_container_swap = std::true_type;
 
   monotonic_allocator(std::size_t size) : _buffer(size) {}
+//Konstantin: поскольку буфер это вектор, при такой записи он будет заполняться нулями в конструкторе. лучше было бы использовать пустой буфер и  _buffer.reserve(size) в теле конструктора
+//Konstantin: не плохо бы предусмотреть значение по умолчанию для размера буфера, поскольку не всякий контейнер принимает в конструкторе экземпляр класса аллокатор, многие просто
+//создают аллокатор вызывая для него конструктор по умолчанию
 
   auto allocate(std::size_t size) -> T* {
     if (size * sizeof(T) > _buffer.size() - _allocated) {
@@ -35,16 +38,21 @@ class monotonic_allocator {
 
   void deallocate(T* /*ptr*/, std::size_t /*size*/) noexcept {
     // do nothing
+   //Konstantin: если контейнер просит деаллоцировать последние N байт из занятых, то мы можем просто сделать _allocated-=N;
+   //не вижу причин почему бы не ввести такую возможность
   }
 
  private:
   std::size_t _allocated = 0;
-  std::vector<std::byte> _buffer;
+  std::vector<std::byte> _buffer; 
+//Konstantin: контейнер внутри аллокатора для контейнера, не слишком ли замудреное решение?
 };
 
 enum class pool_strategy { grow, throw_bad_alloc };
 
-template <typename T, std::size_t BlockSize = 200,
+template <typename T, std::size_t BlockSize = 200, 
+//Konstantin: Нам известен тип Т который будет размещать аллокатор, хорошо бы было задать значение для BlockSize кратное размеру Т
+//думаю так было бы эффективнее
           pool_strategy Strategy = pool_strategy::throw_bad_alloc>
 struct memory_pool {
  private:
@@ -61,7 +69,9 @@ struct memory_pool {
 
   template <typename U>
   memory_pool(const memory_pool<U, BlockSize, Strategy>& other)
-      : memory_pool{other.size()} {}
+      : memory_pool{other.size()} {} 
+//Konstantin: Насколько я понимаю этот конструктор копирования не копирует, а просто создает новый объект с размером копируемого? 
+// не понял какое применение у такого конструктора
 
   memory_pool(std::size_t initial_blocks_count) noexcept
       : _free_blocks(), _slab(initial_blocks_count) {
@@ -73,11 +83,15 @@ struct memory_pool {
   auto allocate(std::size_t size) -> T* {
     if (sizeof(T) * size > BlockSize) {
       throw std::bad_alloc{};
+     //Konstantin: как я писал ранее логично чтоб размер блока был зависим от размера Т
     }
 
     if (has_free_blocks()) {
       auto free = get_free();
       return reinterpret_cast<T*>(free->data.data());  // NOLINT
+     //Konstantin: насколько я понимаю размещение по одному объекту Т в блок, при этом отслеживается каждый блок свободен или нет
+     //Для маленьких объектов такой аллокатор будет иметь высокие накладные расходы, а для больших объектов,
+     //как мне кажется, эффективен аллокатор, размещающий просто по new
     }
 
     if constexpr (Strategy == pool_strategy::grow) {
