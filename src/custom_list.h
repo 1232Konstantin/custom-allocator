@@ -32,7 +32,8 @@ class list {
     using difference_type = std::ptrdiff_t;
     using value_type = T;
     using pointer = T *;
-    using reference = T &;
+    using reference = T &; 
+//Konstantin: явно описаны iterator_traits, что показывает глубину знаний концепции итератора slt
 
     node_iterator(node_type *ptr) : ptr{ptr} {}
 
@@ -79,12 +80,16 @@ class list {
  public:
   using iterator = node_iterator<node>;
   using const_iterator = node_iterator<const node>;
+//Konstantin: хорошо, что есть константный итератор
   using value_type = T;
 
   list(const Allocator &allocator = Allocator{}) noexcept
       : _block(), _allocator(allocator) {
     _block.next = &_block;
     _block.prev = &_block;
+  //Konstantin: при такой реализации даже пустой лист обращается к аллокатору для размещения 1 элемента
+ //если будет использован аллокатор, резервирующий большой непрерывный блок (monotonic_allocator), то пустой лист
+// сразу отъедает память. Возможно лучше создавать ноды при первом обращении к ним
   };
 
   ~list() {
@@ -107,6 +112,7 @@ class list {
   auto end() noexcept -> iterator { return {&_block}; }
   auto end() const noexcept -> const_iterator { return {&_block}; }
 
+
   void push_back(const T &data) {
     auto *new_node = NodeAllocatorTraits::allocate(_allocator, 1);  // NOLINT
     NodeAllocatorTraits::construct(_allocator, new_node, data);
@@ -115,6 +121,7 @@ class list {
     new_node->prev = _block.prev;
     _block.prev = new_node;
     new_node->next = &_block;
+    ////Konstantin:Красивое решение с замкнутым в кольцо листом
   }
 
   bool empty() const noexcept { return _block.next == &_block; }
